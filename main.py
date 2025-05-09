@@ -9,7 +9,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 
-# Env variables
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -59,3 +58,11 @@ def send_to_telegram(time_text, number, app, message):
 ✉️ ম্যাসেজ:
 ```json
 {message}
+
+Send code & wait 1 minute. Bot Developed By @Fahim959""" url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage" data = {"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "Markdown"} requests.post(url, data=data)
+
+def get_latest_sms(driver): rows = driver.find_elements(By.CSS_SELECTOR, "tr")[1:] if not rows: return None cells = rows[0].find_elements(By.TAG_NAME, "td") if len(cells) < 6: return None time_text = cells[0].text.strip() number = cells[3].text.strip() app = cells[4].text.strip() message = cells[5].text.strip() return time_text, number, app, message
+
+def start_bot(): driver = login_and_navigate() last_otp = "" while True: try: sms = get_latest_sms(driver) if sms and sms[3] != last_otp: send_to_telegram(*sms) last_otp = sms[3] print("নতুন OTP পাঠানো হয়েছে।") else: print("নতুন OTP নেই।") except Exception as e: print("ত্রুটি:", e) time.sleep(3)
+
+if name == "main": start_bot()
